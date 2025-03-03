@@ -15,7 +15,7 @@ app.use(express.json());
 
 // Налаштування CORS для конкретного домену фронтенду
 app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', 'https://777pavel777.github.io'); // Тільки ваш фронтенд
+    res.header('Access-Control-Allow-Origin', 'https://777pavel777.github.io/test/'); // Тільки ваш фронтенд
     res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS'); // Дозволені методи
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     
