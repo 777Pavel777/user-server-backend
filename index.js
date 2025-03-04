@@ -1,56 +1,67 @@
-import express from 'express';
-import { promises as fs } from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import express from "express";
+import { createClient } from "@supabase/supabase-js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Налаштування Supabase
+const supabaseUrl = "https://jtlcmpfxrjgonsyhvagw.supabase.co";
+const supabaseKey =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp0bGNtcGZ4cmpnb25zeWh2YWd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDExMTI1NDIsImV4cCI6MjA1NjY4ODU0Mn0.5AU0rdSg-Hunh9U20hNx7iKm42FWNFakuXy44srNcPA";
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const DATA_FILE = path.join(__dirname, 'users.json');
 
 app.use(express.json());
 
+// Налаштування CORS
 app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
-    }
-    next();
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+  next();
 });
 
-app.get('/api/users', async (req, res) => {
-    try {
-        const data = await fs.readFile(DATA_FILE, 'utf8');
-        const users = JSON.parse(data);
-        res.json(users);
-    } catch (error) {
-        res.json([]);
-    }
+// Отримання списку користувачів
+app.get("/api/users", async (req, res) => {
+  try {
+    const { data, error } = await supabase.from("users").select("*");
+
+    if (error) throw error;
+    res.json(data || []);
+  } catch (error) {
+    console.error("Помилка при отриманні користувачів:", error);
+    res.json([]);
+  }
 });
 
-app.post('/api/users', async (req, res) => {
-    try {
-        const newUser = req.body;
-        let users = [];
-        try {
-            const data = await fs.readFile(DATA_FILE, 'utf8');
-            users = JSON.parse(data);
-        } catch (error) {}
-        users.push(newUser);
-        await fs.writeFile(DATA_FILE, JSON.stringify(users, null, 2));
-        res.status(201).json({ message: 'Користувача збережено', user: newUser });
-    } catch (error) {
-        console.error('Помилка:', error);
-        res.status(500).json({ error: 'Помилка сервера' });
-    }
+// Додавання нового користувача
+app.post("/api/users", async (req, res) => {
+  try {
+    const newUser = req.body;
+    const { data, error } = await supabase
+      .from("users")
+      .insert([newUser])
+      .select();
+
+    if (error) throw error;
+
+    res.status(201).json({
+      message: "Користувача збережено",
+      user: data[0],
+    });
+  } catch (error) {
+    console.error("Помилка при додаванні користувача:", error);
+    res.status(500).json({ error: "Помилка сервера" });
+  }
 });
 
 app.listen(PORT, () => {
-    console.log(`Сервер запущено на порту ${PORT}`);
+  console.log(`Сервер запущено на порту ${PORT}`);
 });
 
 export default app;
