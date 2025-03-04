@@ -14,7 +14,7 @@ app.use(express.json());
 
 // Налаштування CORS
 app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', 'https://github.com/777Pavel777/test');
+    res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     if (req.method === 'OPTIONS') {
