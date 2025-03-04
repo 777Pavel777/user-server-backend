@@ -1,1 +1,24 @@
+const { exec } = require('child_process');
 
+app.post('/api/users', async (req, res) => {
+    try {
+        const newUser = req.body;
+        let users = [];
+        try {
+            const data = await fs.readFile(DATA_FILE, 'utf8');
+            users = JSON.parse(data);
+        } catch (error) {}
+        users.push(newUser);
+        await fs.writeFile(DATA_FILE, JSON.stringify(users, null, 2));
+
+        // Автоматичне оновлення Git
+        exec('git add users.json && git commit -m "Оновлено users.json" && git push', (err) => {
+            if (err) console.error('Помилка Git:', err);
+        });
+
+        res.status(201).json({ message: 'Користувача збережено', user: newUser });
+    } catch (error) {
+        console.error('Помилка:', error);
+        res.status(500).json({ error: 'Помилка сервера' });
+    }
+});
