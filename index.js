@@ -12,7 +12,6 @@ const DATA_FILE = path.join(__dirname, 'users.json');
 
 app.use(express.json());
 
-// Налаштування CORS
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -23,7 +22,6 @@ app.use((req, res, next) => {
     next();
 });
 
-// Отримання списку користувачів
 app.get('/api/users', async (req, res) => {
     try {
         const data = await fs.readFile(DATA_FILE, 'utf8');
@@ -34,17 +32,14 @@ app.get('/api/users', async (req, res) => {
     }
 });
 
-// Додавання нового користувача
 app.post('/api/users', async (req, res) => {
     try {
-        const newUser = req.body; // Очікуємо { name, email, phone, country }
+        const newUser = req.body;
         let users = [];
         try {
             const data = await fs.readFile(DATA_FILE, 'utf8');
             users = JSON.parse(data);
-        } catch (error) {
-            // Файл не існує
-        }
+        } catch (error) {}
         users.push(newUser);
         await fs.writeFile(DATA_FILE, JSON.stringify(users, null, 2));
         res.status(201).json({ message: 'Користувача збережено', user: newUser });
